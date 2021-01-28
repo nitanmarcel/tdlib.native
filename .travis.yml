@@ -37,16 +37,16 @@ script:
   - pwsh ./windows/copy-artifacts.ps1
 
 script:
- - pwsh ./common/nuget-pack.ps1 -Version "1.7.0.$TRAVIS_BUILD_NUMBER" -NuGet nuget
+  - pwsh ./common/nuget-pack.ps1 -Version "1.7.0.$TRAVIS_BUILD_NUMBER" -NuGet nuget
 
- deploy:
-  provider: releases
-  api_key: $GHTOKEN
-  skip_cleanup: true
-  file:
-    - tdlib.osx.zip
-    - tdlib.linux.zip
-    - tdlib.window.zip
-    -tdlib.native.1.7.0.nupkg
-  on:
-    tags: true
+deploy:
+provider: releases
+api_key: $GHTOKEN
+skip_cleanup: true
+file:
+  - tdlib.osx.zip
+  - tdlib.linux.zip
+  - tdlib.window.zip
+  - tdlib.native.1.7.0.nupkg
+on:
+  tags: true
