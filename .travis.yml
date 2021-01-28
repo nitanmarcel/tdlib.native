@@ -2,9 +2,26 @@ language: cpp
 
 matrix:
   include:
+    - os: linux
+      dist: trusty
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - sourceline: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/14.04/prod trusty main"
+              key_url: "https://packages.microsoft.com/keys/microsoft.asc"
+          packages:
+            - powershell
     - os: osx
+      osx_image: xcode9.1
+      before_install:
+        - brew tap caskroom/cask
+        - brew cask install powershell
+    - os: windows
+  fast_finish: true
 
-before_install:
+
+before_script:
   - bash <(wget -O - https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/install-powershell.sh)
   - pwsh ./macos/install.ps1
 
@@ -12,15 +29,24 @@ script:
   - pwsh ./macos/build.ps1
   - pwsh ./macos/pack.ps1
   - pwsh ./macos/copy-artifacts.ps1
-  - pwsh ./common/nuget-pack.ps1 -Version "1.6.0.$TRAVIS_BUILD_NUMBER" -NuGet nuget
-  - pwsh ./common/test.ps1 -NuGet nuget -dotnet /usr/local/share/dotnet/dotnet
+  - pwsh ./linux/build.ps1
+  - pwsh ./linux/pack.ps1
+  - pwsh ./linux/copy-artifacts.ps1
+  - pwsh ./windows/build.ps1
+  - pwsh ./windows/pack.ps1
+  - pwsh ./windows/copy-artifacts.ps1
 
-deploy:
+script:
+ - pwsh ./common/nuget-pack.ps1 -Version "1.7.0.$TRAVIS_BUILD_NUMBER" -NuGet nuget
+
+ deploy:
   provider: releases
-  api_key:
-    - secure: "a+lFTXGeFeQ8/pCjAjQZ5cni4+Bc0hTOrQIYSz+ShIi1j3Y8Yj4rDI+lDt9oTKiAo3Zct79tMKChV8NKjsefh7KNt1hcxQ8okhYcT1jtx29wOWYx8HL3nPDD8h4zNjZWEp3yAlPKe/KxPv4fEfHz+GgiaxH6T1FRUOuA0v8xTxnL6544bv8JpRapdKf9OoMLYW/cimVZN2srVFFiQpwcql4aInwuFj3tVmx1NDNH/JPbNwP+Ur+R/bOL5uSsKlNrrNXLBx/UYrj7jcmmIanPue5iUXjvlG3aqovV/AjUzX4PXfrfi3WeUm3sLnx4OKoCGOooFs4ISn2VEK+vIaNPyYwQhM0NXVqSHxEnc+WySCK4HjpIf515hPj075UvPvnuYxxv7d+Ag1PI/MaIUph++sPuJMa3Bg9Xa9PEsbZb6qXbCK8rKE6lJ0iDY4mpVMkwLCKrVuKFvoVlDrnYvIzo7q9GOmRB+oGtOpwBm4Q08U+FrFAsX0CVw36burpAJh7J+oIsOTTaw6BxuQD+NHdQ+jsDflrTWgqKvrP7w/SVIaLdV/NoqN+jpy9r8NBYOyvgKS8b1UpYYZA0/XWhGE9/8jKJzN0roKkyxprFjvh1OBD6r7SSi8EWKV6wBg1V7lzS6WWRWEUgU9rh1VHwrYkV/vEyAHcjGi/VTZrOdfjrgGA="
+  api_key: $GHTOKEN
+  skip_cleanup: true
   file:
     - tdlib.osx.zip
-  skip_cleanup: true
+    - tdlib.linux.zip
+    - tdlib.window.zip
+    -tdlib.native.1.7.0.nupkg
   on:
     tags: true
